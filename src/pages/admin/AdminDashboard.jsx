@@ -240,9 +240,9 @@ const AdminDashboard = () => {
          </div>
          
          <div className="p-8 bg-slate-50/50 text-center">
-            <button className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:text-slate-900 transition-colors">
+            <Link to="/admin/orders" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] hover:text-slate-900 transition-colors">
                Load Additional Records
-            </button>
+            </Link>
          </div>
       </div>
     </div>

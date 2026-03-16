@@ -77,6 +77,15 @@ const AdminLayout = () => {
             </Link>
           ))}
         </nav>
+        <div className="p-4 mt-auto">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl text-sm font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
+          >
+            <LogOut size={20} />
+            Logout
+          </button>
+        </div>
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
         <main className="p-10"><Outlet /></main>
