@@ -41,7 +41,7 @@ const AnnouncementBar = () => {
             x: {
               repeat: Infinity,
               repeatType: "loop",
-              duration: Math.max(coupons.length * 20, 40), // Slower, smoother speed
+              duration: Math.max(coupons.length * 15, 30), // Medium speed
               ease: "linear",
             },
           }}
