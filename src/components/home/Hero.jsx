@@ -95,7 +95,7 @@ const Hero = () => {
             className="absolute inset-4 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white z-20"
           >
             <img 
-              src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800" 
+              src="https://images.unsplash.com/photo-1610348725531-843dff563e2c?auto=format&fit=crop&q=100&w=1200" 
               alt="Fresh organic vegetables" 
               className="w-full h-full object-cover"
             />
@@ -123,9 +123,9 @@ const Hero = () => {
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             className="absolute -right-4 bottom-24 z-30 bg-white p-3 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 pr-5"
           >
-            <img src="https://images.unsplash.com/photo-1588144105051-fb18fed3908c?auto=format&fit=crop&w=100&q=80" alt="Tomato" className="w-12 h-12 rounded-xl object-cover" />
+            <img src="https://images.unsplash.com/photo-1590779033100-9f60a05a013d?auto=format&fit=crop&w=150&q=100" alt="Tomato" className="w-12 h-12 rounded-xl object-cover" />
             <div>
-              <p className="text-sm font-bold text-gray-900">Desi Tomatoes</p>
+              <p className="text-sm font-bold text-gray-900">Fresh Tomatoes</p>
               <p className="text-xs text-emerald-600 font-bold mt-0.5">₹40 / kg</p>
             </div>
           </motion.div>

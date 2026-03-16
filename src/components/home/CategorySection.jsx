@@ -37,7 +37,7 @@ const CategorySection = () => {
     { id: '3', name: 'Dairy & Eggs', slug: 'dairy-eggs', imageUrl: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=500&q=80', color: 'bg-blue-50', accent: 'text-blue-600' },
     { id: '4', name: 'Meat & Poultry', slug: 'meat-poultry', imageUrl: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?auto=format&fit=crop&w=500&q=80', color: 'bg-red-50', accent: 'text-rose-600' },
     { id: '5', name: 'Bakery', slug: 'bakery', imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=500&q=80', color: 'bg-amber-50', accent: 'text-amber-600' },
-    { id: '6', name: 'Organic Items', slug: 'organic', imageUrl: 'https://images.unsplash.com/photo-1595855761358-0ceec0e8a719?auto=format&fit=crop&w=500&q=80', color: 'bg-emerald-50', accent: 'text-emerald-700' }
+    { id: '6', name: 'Organic Items', slug: 'organic', imageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=500&q=80', color: 'bg-emerald-50', accent: 'text-emerald-700' }
   ];
 
   return (

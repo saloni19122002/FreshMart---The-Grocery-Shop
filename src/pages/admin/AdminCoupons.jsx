@@ -19,7 +19,7 @@ const AdminCoupons = () => {
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ code: '', discount: '', expiry: '', isActive: true });
+  const [formData, setFormData] = useState({ code: '', discount: '', expiry: '', description: '', isActive: true });
 
   useEffect(() => {
     fetchCoupons();
@@ -81,7 +81,10 @@ const AdminCoupons = () => {
                      <Percent size={32} />
                   </div>
                   <h3 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">{coupon.code}</h3>
-                  <p className="text-emerald-600 font-black text-base uppercase tracking-widest">{coupon.discount}% FLAT OFF</p>
+                  <p className="text-emerald-600 font-black text-base uppercase tracking-widest leading-none mb-3">{coupon.discount}% FLAT OFF</p>
+                  {coupon.description && (
+                    <p className="text-[10px] text-slate-400 font-bold max-w-[200px] line-clamp-2">{coupon.description}</p>
+                  )}
                   
                   <div className="mt-8 pt-8 border-t border-slate-50 w-full space-y-4">
                      <div className="flex items-center justify-center gap-2 text-slate-400 font-bold text-xs">
@@ -130,6 +133,15 @@ const AdminCoupons = () => {
                       onChange={(e) => setFormData({...formData, discount: e.target.value})}
                     />
                  </div>
+                  <div className="space-y-2">
+                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Coupon Description (Optional)</label>
+                     <input 
+                       type="text" placeholder="e.g. For whole platform"
+                       className="w-full bg-slate-50 border-none rounded-2xl py-4 px-6 focus:ring-2 focus:ring-emerald-500"
+                       value={formData.description}
+                       onChange={(e) => setFormData({...formData, description: e.target.value})}
+                     />
+                  </div>
                  <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Expiry Date</label>
                     <input 

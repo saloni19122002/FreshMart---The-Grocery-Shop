@@ -61,9 +61,9 @@ const BannerSlider = () => {
           className="absolute inset-0"
         >
           <img 
-            src={banners[currentIndex].imageUrl || "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&q=80&w=2000"} 
+            src={banners[currentIndex].imageUrl || "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=100&w=2000"} 
             alt={banners[currentIndex].title || "Promotional Banner"} 
-            className="w-full h-full object-cover opacity-80"
+            className="w-full h-full object-cover opacity-90"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-8 md:p-12">
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">

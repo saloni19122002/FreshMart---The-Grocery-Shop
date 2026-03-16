@@ -433,13 +433,20 @@ const Checkout = () => {
             <div className="mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-100">
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Have a coupon?</label>
               {appliedCoupon ? (
-                <div className="flex items-center justify-between bg-emerald-50 p-2 rounded-xl border border-emerald-100">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-emerald-600" />
-                    <span className="text-sm font-bold text-emerald-800">{appliedCoupon.code}</span>
+                <>
+                  <div className="flex items-center justify-between bg-emerald-50 p-2 rounded-xl border border-emerald-100">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 size={16} className="text-emerald-600" />
+                      <span className="text-sm font-bold text-emerald-800">{appliedCoupon.code}</span>
+                    </div>
+                    <button onClick={removeCoupon} className="text-xs font-bold text-red-500 hover:text-red-600 px-2">Remove</button>
                   </div>
-                  <button onClick={removeCoupon} className="text-xs font-bold text-red-500 hover:text-red-600 px-2">Remove</button>
-                </div>
+                  {appliedCoupon.description && (
+                    <p className="mt-2 text-[10px] font-medium text-emerald-600/70 italic px-1">
+                      "{appliedCoupon.description}"
+                    </p>
+                  )}
+                </>
               ) : (
                 <div className="flex gap-2">
                   <input 

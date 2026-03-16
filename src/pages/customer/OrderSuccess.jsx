@@ -53,16 +53,19 @@ const OrderSuccess = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-      <div className="mb-8 flex justify-center">
-        <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 border-8 border-emerald-50">
-          <CheckCircle2 size={48} />
+      <div className="mb-8 flex flex-col items-center">
+        <div className="w-24 h-24 bg-emerald-100 rounded-[2.5rem] flex items-center justify-center text-emerald-600 border-8 border-emerald-50 shadow-2xl shadow-emerald-100 mb-6 group hover:rotate-12 transition-transform duration-500">
+          <CheckCircle2 size={48} className="animate-bounce" />
         </div>
+        <span className="px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] border border-emerald-100">Order Confirmed</span>
       </div>
 
-      <h1 className="text-4xl font-black text-gray-900 mb-4">Woot! Order Placed!</h1>
-      <p className="text-xl text-gray-500 mb-10">
-        Your order <span className="text-emerald-600 font-bold">#{orderId.slice(-6).toUpperCase()}</span> has been placed successfully. 
-        We'll send you a confirmation as soon as it's shipped.
+      <h1 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 tracking-tighter">
+        Woo-hoo! <br/> <span className="text-emerald-600">You're Awesome.</span>
+      </h1>
+      <p className="text-xl text-gray-500 mb-12 font-medium max-w-xl mx-auto">
+        Your fresh farm picks are being prepared! Order <span className="text-slate-900 font-bold">#{orderId.slice(-6).toUpperCase()}</span> is officially in the queue. 
+        Get ready for some goodness coming your way!
       </p>
 
       <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 mb-10 text-left">

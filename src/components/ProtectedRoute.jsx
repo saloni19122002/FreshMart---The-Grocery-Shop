@@ -38,8 +38,8 @@ export const FarmerRoute = ({ children }) => {
 
   if (loading) return <Loader />;
 
-  if (!currentUser || (role !== 'farmer' && role !== 'admin')) {
-    return <Navigate to="/unauthorized" replace />;
+  if (!currentUser) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return children;

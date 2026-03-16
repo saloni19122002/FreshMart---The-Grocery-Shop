@@ -7,7 +7,6 @@ import AnnouncementBar from '../AnnouncementBar';
 const MainLayout = () => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <AnnouncementBar />
       <Header />
       <main className="flex-grow pt-[88px]">
         <Outlet />
