@@ -7,8 +7,8 @@ const FloatingBackButton = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  if (location.pathname === '/' || location.pathname === '/login' || location.pathname === '/signup') return null;
-
+  // Hide on auth pages
+  if (['/login', '/signup', '/forgot-password'].includes(location.pathname)) return null;
   return (
     <motion.button
       initial={{ opacity: 0, scale: 0.8 }}

@@ -15,9 +15,13 @@ const AnnouncementBar = () => {
         const activeCoupons = await getActiveCoupons();
         if (activeCoupons.length > 0) {
           setCoupons(activeCoupons);
+        } else {
+          // Fallback so the bar is always visible
+          setCoupons([{ id: 'default', code: 'FRESH10', discount: 10, description: 'ON ALL ORGANIC PRODUCTS' }]);
         }
       } catch (error) {
         console.error("Failed to fetch coupons for announcement bar", error);
+        setCoupons([{ id: 'default', code: 'FRESH10', discount: 10, description: 'ON ALL ORGANIC PRODUCTS' }]);
       }
     };
     fetchCoupons();
