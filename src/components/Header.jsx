@@ -49,7 +49,7 @@ const Header = () => {
 
   return (
     <header 
-      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-3' : 'bg-white py-5'
       }`}
     >
