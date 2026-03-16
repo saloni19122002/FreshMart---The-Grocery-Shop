@@ -147,8 +147,8 @@ export const deleteProduct = async (productId) => {
 
 // Upload product image to Cloudinary (Free & No CORS issues)
 export const uploadToCloudinary = async (file) => {
-  const CLOUD_NAME = 'dv4h0cn9d';
-  const UPLOAD_PRESET = 'isrr0q7x';
+  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
   
   try {
     const formData = new FormData();
