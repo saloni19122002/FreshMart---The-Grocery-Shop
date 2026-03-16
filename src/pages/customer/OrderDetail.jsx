@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { db } from '../../firebase/config';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { cancelOrder } from '../../services/orderService';
+import { getUserProfile } from '../../services/userService';
+import { toast } from 'react-hot-toast';
 import { 
   ArrowLeft, 
   Package, 
@@ -11,7 +14,11 @@ import {
   MapPin, 
   CreditCard,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  User,
+  MessageSquare,
+  PhoneCall,
+  XCircle
 } from 'lucide-react';
 
 const OrderDetail = () => {
@@ -19,6 +26,8 @@ const OrderDetail = () => {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [farmers, setFarmers] = useState({});
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (!orderId) return;
@@ -27,9 +36,24 @@ const OrderDetail = () => {
     const docRef = doc(db, 'orders', orderId);
     
     // Use onSnapshot for real-time updates from farmer
-    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+    const unsubscribe = onSnapshot(docRef, async (docSnap) => {
       if (docSnap.exists()) {
-        setOrder({ id: docSnap.id, ...docSnap.data() });
+        const orderData = { id: docSnap.id, ...docSnap.data() };
+        setOrder(orderData);
+        
+        // Fetch farmer profiles for all unique farmerIds in the order
+        const farmerIds = [...new Set(orderData.items.map(item => item.farmerId).filter(Boolean))];
+        const farmerProfiles = {};
+        
+        await Promise.all(farmerIds.map(async (id) => {
+          try {
+            const profile = await getUserProfile(id);
+            if (profile) farmerProfiles[id] = profile;
+          } catch (err) {
+            console.error(`Error fetching profile for farmer ${id}:`, err);
+          }
+        }));
+        setFarmers(farmerProfiles);
       } else {
         setOrder(null);
       }
@@ -42,21 +66,26 @@ const OrderDetail = () => {
     return () => unsubscribe();
   }, [orderId]);
 
+  const handleCancelOrder = async () => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+    
+    try {
+      setCancelling(true);
+      await cancelOrder(orderId);
+      toast.success("Order cancelled successfully");
+    } catch (err) {
+      toast.error(err.message || "Failed to cancel order");
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   if (loading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="animate-spin text-emerald-600" size={40} />
-      </div>
-    );
+// ... existing loading block
   }
 
   if (!order) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Order not found</h2>
-        <Link to="/account/orders" className="btn-primary mt-6 inline-block">Back to My Orders</Link>
-      </div>
-    );
+// ... existing not found block
   }
 
   const steps = [
@@ -77,47 +106,62 @@ const OrderDetail = () => {
             <h1 className="text-3xl font-black text-gray-900">Order Details</h1>
             <p className="text-gray-500 font-medium">#{orderId.toUpperCase()}</p>
           </div>
-          <div className={`self-start px-4 py-2 rounded-2xl border text-sm font-black uppercase tracking-widest flex items-center gap-2 ${
-            order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-            order.status === 'Cancelled' ? 'bg-red-50 text-red-600 border-red-100' :
-            'bg-blue-50 text-blue-600 border-blue-100'
-          }`}>
-            {order.status === 'Delivered' ? <CheckCircle2 size={16} /> : 
-             order.status === 'Shipped' ? <Truck size={16} /> : <Clock size={16} />}
-            {order.status}
+          <div className="flex items-center gap-3">
+            {order.status === 'Placed' && (
+              <button 
+                onClick={handleCancelOrder}
+                disabled={cancelling}
+                className="btn-outline border-red-200 text-red-600 hover:bg-red-50 !py-2 !px-4 text-xs font-black flex items-center gap-2"
+              >
+                {cancelling ? <Loader2 size={14} className="animate-spin" /> : <XCircle size={14} />}
+                Cancel Order
+              </button>
+            )}
+            <div className={`px-4 py-2 rounded-2xl border text-sm font-black uppercase tracking-widest flex items-center gap-2 ${
+              order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+              order.status === 'Cancelled' ? 'bg-red-50 text-red-600 border-red-100' :
+              'bg-blue-50 text-blue-600 border-blue-100'
+            }`}>
+              {order.status === 'Delivered' ? <CheckCircle2 size={16} /> : 
+               order.status === 'Shipped' ? <Truck size={16} /> : 
+               order.status === 'Cancelled' ? <XCircle size={16} /> : <Clock size={16} />}
+              {order.status}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Tracking Stepper */}
-      <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 sm:p-12">
-        <div className="relative flex items-center justify-between max-w-2xl mx-auto">
-          {steps.map((step, idx) => (
-            <div key={idx} className="z-10 flex flex-col items-center gap-3">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-500 ${
-                step.active ? 'bg-emerald-600 border-emerald-100 text-white' : 'bg-white border-gray-100 text-gray-300'
-              }`}>
-                <step.icon size={20} />
+      {order.status !== 'Cancelled' && (
+        <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 sm:p-12">
+          <div className="relative flex items-center justify-between max-w-2xl mx-auto">
+            {steps.map((step, idx) => (
+              <div key={idx} className="z-10 flex flex-col items-center gap-3">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center border-4 transition-all duration-500 ${
+                  step.active ? 'bg-emerald-600 border-emerald-100 text-white' : 'bg-white border-gray-100 text-gray-300'
+                }`}>
+                  <step.icon size={20} />
+                </div>
+                <div className="text-center">
+                  <p className={`text-xs font-black uppercase tracking-widest ${step.active ? 'text-gray-900' : 'text-gray-400'}`}>
+                    {step.label}
+                  </p>
+                  {step.date && <p className="text-[10px] text-gray-400 font-bold mt-1">
+                    {step.date.toDate ? step.date.toDate().toLocaleDateString() : 'Dec 24, 2023'}
+                  </p>}
+                </div>
               </div>
-              <div className="text-center">
-                <p className={`text-xs font-black uppercase tracking-widest ${step.active ? 'text-gray-900' : 'text-gray-400'}`}>
-                  {step.label}
-                </p>
-                {step.date && <p className="text-[10px] text-gray-400 font-bold mt-1">
-                  {step.date.toDate ? step.date.toDate().toLocaleDateString() : 'Dec 24, 2023'}
-                </p>}
-              </div>
+            ))}
+            {/* Progress Line */}
+            <div className="absolute top-6 left-0 w-full h-1 bg-gray-50 -z-0">
+              <div 
+                className="h-full bg-emerald-600 transition-all duration-1000" 
+                style={{ width: order.status === 'Delivered' ? '100%' : order.status === 'Shipped' ? '50%' : '0%' }}
+              />
             </div>
-          ))}
-          {/* Progress Line */}
-          <div className="absolute top-6 left-0 w-full h-1 bg-gray-50 -z-0">
-            <div 
-              className="h-full bg-emerald-600 transition-all duration-1000" 
-              style={{ width: order.status === 'Delivered' ? '100%' : order.status === 'Shipped' ? '50%' : '0%' }}
-            />
           </div>
         </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Side: Items */}
@@ -127,18 +171,48 @@ const OrderDetail = () => {
               <Package className="text-emerald-500" /> Items in Order
             </h3>
             <div className="divide-y divide-gray-50">
-              {order.items.map((item, idx) => (
-                <div key={idx} className="py-4 first:pt-0 last:pb-0 flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden shrink-0">
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+              {order.items.map((item, idx) => {
+                const farmer = farmers[item.farmerId];
+                return (
+                  <div key={idx} className="py-6 first:pt-0 last:pb-0 space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-20 h-20 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden shrink-0">
+                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-gray-900 text-lg line-clamp-1">{item.name}</p>
+                        <p className="text-sm text-gray-500 font-medium">{item.quantity} x ₹{item.price}</p>
+                      </div>
+                      <p className="font-black text-gray-900 text-lg">₹{item.price * item.quantity}</p>
+                    </div>
+                    
+                    {/* Seller Info */}
+                    {farmer && (
+                      <div className="flex items-center justify-between bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                            <User size={14} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Sold by</p>
+                            <p className="text-xs font-bold text-gray-900">{farmer.displayName}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {farmer.phoneNumber && (
+                            <a href={`tel:${farmer.phoneNumber}`} className="p-2 bg-white text-emerald-600 rounded-xl border border-gray-100 hover:bg-emerald-50 transition-colors shadow-sm" title="Call Farmer">
+                              <PhoneCall size={14} />
+                            </a>
+                          )}
+                          <button className="p-2 bg-white text-blue-600 rounded-xl border border-gray-100 hover:bg-blue-50 transition-colors shadow-sm" title="Message Farmer">
+                            <MessageSquare size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-900 line-clamp-1">{item.name}</p>
-                    <p className="text-xs text-gray-500 font-medium">{item.quantity} x ₹{item.price}</p>
-                  </div>
-                  <p className="font-black text-gray-900">₹{item.price * item.quantity}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -195,13 +269,25 @@ const OrderDetail = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-6 flex items-center gap-4">
-             <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
-               <AlertCircle size={20} />
+          <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 space-y-6">
+             <div className="flex items-center gap-4">
+               <div className="w-12 h-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                 <AlertCircle size={24} />
+               </div>
+               <div>
+                 <p className="text-sm font-black text-gray-900">Need Help with Order?</p>
+                 <p className="text-xs text-gray-400 font-medium">Our support team is available 24/7</p>
+               </div>
              </div>
-             <div>
-               <p className="text-xs font-black text-gray-900">Need Help?</p>
-               <button className="text-[10px] font-bold text-emerald-600 hover:underline">Contact Support</button>
+             <div className="grid grid-cols-2 gap-3">
+                <a href="tel:+1234567890" className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                  <PhoneCall size={20} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-black uppercase text-gray-400 group-hover:text-emerald-600">Call Us</span>
+                </a>
+                <Link to="/contact" className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-blue-50 hover:border-blue-100 transition-all group">
+                  <MessageSquare size={20} className="text-blue-600 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-black uppercase text-gray-400 group-hover:text-blue-600">Email Us</span>
+                </Link>
              </div>
           </div>
         </div>

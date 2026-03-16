@@ -64,9 +64,9 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     const user = await logInWithGoogle();
     // Check if user document exists, if not create it
-    const doc = await getDocument('users', user.uid);
-    if (!doc) {
-      const newUserData = {
+    let userDoc = await getDocument('users', user.uid);
+    if (!userDoc) {
+      userDoc = {
         uid: user.uid,
         name: user.displayName || 'User',
         email: user.email,
@@ -74,12 +74,10 @@ export const AuthProvider = ({ children }) => {
         isActive: true,
         createdAt: new Date().toISOString()
       };
-      await setDocument('users', user.uid, newUserData);
-      setUserData(newUserData);
-    } else {
-      setUserData(doc);
+      await setDocument('users', user.uid, userDoc);
     }
-    return user;
+    setUserData(userDoc);
+    return { user, userData: userDoc };
   };
 
   const logout = async () => {

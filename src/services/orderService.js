@@ -147,3 +147,29 @@ export const updateOrderStatus = async (orderId, newStatus) => {
     throw error;
   }
 };
+
+// Cancel an order (by customer)
+export const cancelOrder = async (orderId) => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, orderId);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) throw new Error("Order not found");
+    
+    const orderData = docSnap.data();
+    if (orderData.orderStatus !== 'Placed') {
+      throw new Error(`Order cannot be cancelled as it is already ${orderData.orderStatus}`);
+    }
+
+    await updateDoc(docRef, {
+      status: 'Cancelled',
+      orderStatus: 'Cancelled',
+      cancelledAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    return true;
+  } catch (error) {
+    console.error("Error cancelling order:", error);
+    throw error;
+  }
+};

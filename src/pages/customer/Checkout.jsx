@@ -4,6 +4,7 @@ import { useCartStore } from '../../store/useCartStore';
 import { useAuth } from '../../context/AuthContext';
 import { getUserAddresses, addAddress } from '../../services/addressService';
 import { placeOrder } from '../../services/orderService';
+import { validateCoupon } from '../../services/couponService';
 import { 
   ChevronRight, 
   MapPin, 
@@ -40,9 +41,37 @@ const Checkout = () => {
     type: 'Home'
   });
 
+  const [couponCode, setCouponCode] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+
   const subtotal = getCartTotal();
-  const shipping = subtotal > 500 ? 0 : 40;
-  const total = subtotal + shipping;
+  const discountAmount = appliedCoupon ? (subtotal * appliedCoupon.discount) / 100 : 0;
+  const shipping = (subtotal - discountAmount) > 500 ? 0 : 40;
+  const total = subtotal - discountAmount + shipping;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponLoading(true);
+    try {
+      const coupon = await validateCoupon(couponCode);
+      if (coupon) {
+        setAppliedCoupon(coupon);
+        toast.success(`Coupon "${coupon.code}" applied!`);
+      } else {
+        toast.error('Invalid or expired coupon code');
+      }
+    } catch (error) {
+      toast.error('Error validating coupon');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+  };
 
   useEffect(() => {
     if (items.length === 0) {
@@ -399,11 +428,51 @@ const Checkout = () => {
         <div className="lg:w-96">
           <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm">
             <h3 className="text-lg font-black text-gray-900 mb-6">Order Details</h3>
+            
+            {/* Coupon Code Section */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Have a coupon?</label>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-emerald-50 p-2 rounded-xl border border-emerald-100">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-emerald-600" />
+                    <span className="text-sm font-bold text-emerald-800">{appliedCoupon.code}</span>
+                  </div>
+                  <button onClick={removeCoupon} className="text-xs font-bold text-red-500 hover:text-red-600 px-2">Remove</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Enter code"
+                    className="flex-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 uppercase font-bold"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  />
+                  <button 
+                    onClick={handleApplyCoupon}
+                    disabled={couponLoading || !couponCode}
+                    className="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 disabled:opacity-50"
+                  >
+                    {couponLoading ? <Loader2 size={14} className="animate-spin" /> : 'Apply'}
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-4 text-sm font-medium">
               <div className="flex justify-between text-gray-500">
                 <span>Items Subtotal</span>
                 <span className="text-gray-900 font-bold">₹{subtotal}</span>
               </div>
+              
+              {appliedCoupon && (
+                <div className="flex justify-between text-emerald-600">
+                  <span className="flex items-center gap-1">Discount ({appliedCoupon.discount}%)</span>
+                  <span className="font-bold">-₹{discountAmount}</span>
+                </div>
+              )}
+
               <div className="flex justify-between text-gray-500">
                 <span>Shipping Fee</span>
                 <span className={`font-bold ${shipping === 0 ? 'text-emerald-600' : 'text-gray-900'}`}>
