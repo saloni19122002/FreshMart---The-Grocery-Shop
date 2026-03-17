@@ -47,23 +47,25 @@ const FarmerLayout = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col lg:flex-row">
       <LogoutConfirmModal
         isOpen={showLogoutModal}
         onConfirm={handleLogoutConfirm}
         onCancel={() => setShowLogoutModal(false)}
       />
-      {/* Mobile Header */}
-      <header className="lg:hidden bg-white border-b px-4 py-4 flex items-center justify-between sticky top-0 z-40">
+      {/* Mobile Header - More Premium like Admin */}
+      <header className="lg:hidden bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-40 shadow-sm">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-emerald-50 rounded-lg p-1 border border-emerald-100/50">
+          <div className="w-10 h-10 bg-white rounded-xl p-1.5 border border-slate-100 shadow-sm">
             <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="text-xl font-black text-emerald-600">FreshMart</span>
+          <span className="text-xl font-black text-slate-900">
+            FM <span className="text-emerald-600">Farmer</span>
+          </span>
         </Link>
         <button 
           onClick={() => setIsMobileMenuOpen(true)}
-          className="p-2 text-gray-500 hover:bg-gray-100 rounded-xl transition-colors"
+          className="p-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-all border border-transparent hover:border-slate-100"
         >
           <Menu size={24} />
         </button>
@@ -85,51 +87,51 @@ const FarmerLayout = () => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 bottom-0 w-80 bg-white z-[60] lg:hidden flex flex-col shadow-2xl"
+              className="fixed left-0 top-0 bottom-0 w-80 bg-slate-900 text-slate-300 z-[60] lg:hidden flex flex-col shadow-2xl"
             >
-              <div className="p-8 border-b flex items-center justify-between">
+              <div className="p-8 border-b border-slate-800 flex items-center justify-between">
                 <Link to="/" className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-50 rounded-xl p-1.5 border border-emerald-100/50">
+                  <div className="w-12 h-12 bg-white rounded-2xl p-2 shadow-lg">
                     <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
                   </div>
-                  <span className="text-2xl font-black text-emerald-600">FreshMart</span>
+                  <span className="text-2xl font-black text-white">FM <span className="text-emerald-500">Farmer</span></span>
                 </Link>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-gray-400 hover:text-gray-900 transition-colors">
-                  <X size={20} />
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-white transition-colors">
+                  <X size={24} />
                 </button>
               </div>
 
               <div className="p-6">
-                <div className="bg-emerald-50 rounded-2xl p-4 flex items-center gap-4 border border-emerald-100">
-                  <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-emerald-600 border border-emerald-100">
+                <div className="bg-white/5 rounded-3xl p-5 border border-white/10 flex items-center gap-4">
+                  <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
                     <User size={24} />
                   </div>
-                  <div>
-                    <p className="text-xs font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">Seller Access</p>
-                    <p className="text-sm font-bold text-gray-900 truncate max-w-[140px]">{currentUser?.displayName || 'Farmer'}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none mb-1.5">Authorized Store</p>
+                    <p className="text-sm font-bold text-white truncate">{currentUser?.displayName || 'Farmer Access'}</p>
                   </div>
                 </div>
               </div>
 
-              <nav className="flex-1 px-4 space-y-1">
+              <nav className="flex-1 px-4 space-y-1 mt-2">
                 {menuItems.map((item) => (
                   <Link 
                     key={item.name} 
                     to={item.path} 
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-6 py-4 rounded-2xl text-sm font-bold transition-all ${isActive(item.path) ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'text-gray-500 hover:bg-gray-50'}`}
+                    className={`flex items-center gap-3.5 px-6 py-4 rounded-2xl text-sm font-bold transition-all ${isActive(item.path) ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
                   >
-                    <item.icon size={20} /> {item.name}
+                    <item.icon size={20} className={isActive(item.path) ? 'text-emerald-400' : 'text-slate-500'} /> {item.name}
                   </Link>
                 ))}
               </nav>
 
-              <div className="p-4 border-t">
+              <div className="p-6 border-t border-slate-800">
                 <button 
                   onClick={handleLogoutClick}
-                  className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-sm font-bold text-red-500 hover:bg-red-50 transition-all border border-transparent hover:border-red-100"
+                  className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl text-sm font-bold text-red-400 hover:bg-red-500/10 transition-all"
                 >
-                  <LogOut size={20} /> Sign Out Account
+                  <LogOut size={20} /> Logout Session
                 </button>
               </div>
             </motion.aside>
@@ -137,50 +139,53 @@ const FarmerLayout = () => {
         )}
       </AnimatePresence>
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-80 flex-col bg-white border-r sticky top-0 h-screen overflow-y-auto">
-        <div className="p-10">
+      {/* Desktop Sidebar - Dark Theme like Admin */}
+      <aside className="hidden lg:flex w-72 flex-col bg-slate-900 text-slate-300 sticky top-0 h-screen flex-shrink-0">
+        <div className="p-8">
           <Link to="/" className="flex items-center gap-4 group">
-            <div className="w-14 h-14 bg-emerald-50 rounded-[1.25rem] p-2.5 group-hover:rotate-6 transition-transform duration-500 shadow-sm border border-emerald-100/50 flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 bg-white rounded-2xl p-2 group-hover:rotate-6 transition-transform duration-300 shadow-lg shrink-0">
               <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
             </div>
-            <div className="flex flex-col leading-tight min-w-0">
-              <span className="text-2xl font-black text-emerald-600 tracking-tighter truncate">FreshMart</span>
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap">Farmer Dashboard</span>
+            <div className="min-w-0">
+              <span className="text-2xl font-black text-white leading-none block">FM <span className="text-emerald-500">Farmer</span></span>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mt-1">Authorized Access</span>
             </div>
           </Link>
         </div>
 
-        <div className="px-8 mb-10">
-          <div className="bg-slate-50 rounded-3xl p-5 flex items-center gap-4 border border-slate-100/50 shadow-inner">
-            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 border border-slate-100 shadow-sm shrink-0">
+        <div className="px-6 mb-8 mt-4">
+          <div className="bg-white/5 rounded-[2rem] p-5 flex items-center gap-4 border border-white/10 shadow-inner group/user">
+            <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 border border-slate-700 shadow-sm shrink-0 group-hover/user:border-emerald-500/50 transition-colors">
               <User size={24} />
             </div>
-            <div className="min-w-0">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1.5 font-display">Authorized</p>
-              <p className="text-sm font-bold text-slate-900 truncate font-display">{currentUser?.displayName || 'Farmer'}</p>
+            <div className="min-w-0 overflow-hidden">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none mb-1.5">Authorized</p>
+              <p className="text-sm font-bold text-white truncate max-w-full" title={currentUser?.displayName || 'Farmer'}>
+                {currentUser?.displayName || 'Farmer Profile'}
+              </p>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 px-5 space-y-2.5">
+        <nav className="flex-1 px-4 space-y-1.5 mt-2">
           {menuItems.map((item) => (
             <Link 
               key={item.name} 
               to={item.path} 
-              className={`flex items-center gap-3.5 px-6 py-4 rounded-2xl text-sm font-black transition-all group/nav ${isActive(item.path) ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-100 translate-x-1' : 'text-slate-500 hover:bg-emerald-50 hover:text-emerald-700'}`}
+              className={`flex items-center gap-3.5 px-6 py-4 rounded-2xl text-sm font-bold transition-all group/nav ${isActive(item.path) ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
             >
-              <item.icon size={20} className={`transition-transform duration-300 ${isActive(item.path) ? 'text-white' : 'group-hover/nav:scale-110'}`} /> {item.name}
+              <item.icon size={20} className={`transition-colors ${isActive(item.path) ? 'text-emerald-400' : 'text-slate-500 group-hover/nav:text-slate-300'}`} /> 
+              {item.name}
             </Link>
           ))}
         </nav>
 
-        <div className="p-6 mt-auto border-t bg-slate-50/30">
+        <div className="p-6 mt-auto border-t border-slate-800 bg-slate-900/50">
           <button 
             onClick={handleLogoutClick}
-            className="w-full flex items-center justify-center gap-2 px-4 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-red-500 hover:bg-red-50 hover:text-red-600 transition-all border-2 border-transparent hover:border-red-100"
+            className="w-full flex items-center justify-center gap-3 px-4 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-red-500 hover:bg-red-500/10 hover:text-red-400 transition-all"
           >
-            <LogOut size={16} /> Logout Account
+            <LogOut size={16} /> Logout Access
           </button>
         </div>
       </aside>
