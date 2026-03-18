@@ -1,236 +1,264 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { setDocument } from '../../firebase/firestore';
-import { updateProfile } from 'firebase/auth';
+import { db } from '../../firebase/config';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { 
-  User, 
   Store, 
-  Phone, 
+  User, 
+  Mail, 
   MapPin, 
-  FileText, 
+  Phone, 
+  Camera, 
   Save, 
-  Camera,
+  Loader2, 
   CheckCircle2,
   AlertCircle,
-  Loader2
+  ExternalLink,
+  ShieldCheck,
+  Building,
+  ArrowRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 const FarmerProfile = () => {
   const { currentUser, userData } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: currentUser?.displayName || '',
-    storeName: userData?.storeName || '',
-    phone: userData?.phone || '',
-    address: userData?.address || '',
-    bio: userData?.bio || '',
-    categories: userData?.categories || ''
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] = useState({
+    displayName: '',
+    email: '',
+    phoneNumber: '',
+    farmName: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    description: '',
+    avatarUrl: ''
   });
 
   useEffect(() => {
-    if (userData) {
-      setFormData({
-        fullName: currentUser?.displayName || '',
-        storeName: userData.storeName || '',
-        phone: userData.phone || '',
-        address: userData.address || '',
-        bio: userData.bio || '',
-        categories: userData.categories || ''
-      });
-    }
-  }, [userData, currentUser]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      // 1. Update Auth Profile (Display Name)
-      if (formData.fullName !== currentUser.displayName) {
-        await updateProfile(currentUser, {
-          displayName: formData.fullName
-        });
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        if (currentUser) {
+          const docRef = doc(db, 'users', currentUser.uid);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setProfile({
+              displayName: data.displayName || '',
+              email: data.email || '',
+              phoneNumber: data.phoneNumber || '',
+              farmName: data.farmName || '',
+              address: data.address || '',
+              city: data.city || '',
+              state: data.state || '',
+              pincode: data.pincode || '',
+              description: data.description || '',
+              avatarUrl: data.avatarUrl || ''
+            });
+          }
+        }
+      } catch (error) {
+        toast.error("Failed to fetch profile data");
+      } finally {
+        setLoading(false);
       }
+    };
 
-      // 2. Update Firestore Document
-      const updatedData = {
-        ...userData,
-        storeName: formData.storeName,
-        phone: formData.phone,
-        address: formData.address,
-        bio: formData.bio,
-        categories: formData.categories,
-        updatedAt: new Date().toISOString()
-      };
+    fetchProfile();
+  }, [currentUser]);
 
-      await setDocument('users', currentUser.uid, updatedData);
-      toast.success('Profile updated successfully!');
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      const userRef = doc(db, 'users', currentUser.uid);
+      await updateDoc(userRef, profile);
+      toast.success("Store credentials updated");
     } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error('Failed to update profile');
+      toast.error("Cloud synchronization failed");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+        <Loader2 className="animate-spin text-emerald-500" size={48} />
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Retrieving Secure Credentials...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-4 lg:p-10 max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="p-4 lg:p-10 space-y-12 animate-in fade-in duration-700 max-w-[1200px] mx-auto">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Market Profile</h1>
-          <p className="text-slate-500 font-medium mt-2">Manage your public presence and farm information</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Authorized Store</h1>
+          <p className="text-slate-500 font-medium mt-1">Manage your official farm identity and marketplace presence</p>
         </div>
-        <div className="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl border border-emerald-100 flex items-center gap-2 text-xs font-black uppercase tracking-widest">
-          <CheckCircle2 size={16} /> Verified Producer
+        <div className="flex bg-emerald-50 px-6 py-3 rounded-2xl border border-emerald-100 items-center gap-3">
+          <ShieldCheck className="text-emerald-600" size={24} />
+          <div className="text-[10px] font-black text-emerald-700 uppercase tracking-widest leading-none">
+             Verification Status: <span className="text-emerald-900 underline block mt-1">CERTIFIED MERCHANT</span>
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-10">
-        {/* Left Column: Avatar & Overview */}
-        <div className="md:col-span-1 space-y-8">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col items-center text-center group">
-            <div className="relative mb-6">
-              <div className="w-32 h-32 bg-slate-100 rounded-[2.5rem] flex items-center justify-center text-slate-400 border-4 border-white shadow-xl group-hover:bg-emerald-50 transition-colors">
-                <User size={64} />
+      <form onSubmit={handleUpdate} className="grid grid-cols-1 xl:grid-cols-3 gap-12">
+        {/* Profile Card */}
+        <div className="xl:col-span-1 space-y-8">
+           <div className="bg-white rounded-[3rem] border border-slate-100 shadow-sm p-10 text-center relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-2 shadow-inner bg-gradient-to-r from-emerald-400 to-emerald-600" />
+              
+              <div className="relative mb-10 inline-block">
+                 <div className="w-32 h-32 bg-slate-50 rounded-[2.5rem] border-4 border-white shadow-xl flex items-center justify-center text-slate-200 overflow-hidden relative group-hover:rotate-3 transition-transform duration-500">
+                    {profile.avatarUrl ? (
+                      <img src={profile.avatarUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <User size={64} />
+                    )}
+                 </div>
+                 <button type="button" className="absolute -bottom-2 -right-2 w-10 h-10 bg-slate-900 text-white rounded-xl border-4 border-white shadow-lg flex items-center justify-center hover:scale-110 active:scale-90 transition-all">
+                    <Camera size={18} />
+                 </button>
               </div>
-              <button type="button" className="absolute -bottom-2 -right-2 bg-emerald-600 text-white p-3 rounded-2xl shadow-lg hover:bg-emerald-700 transition-all hover:scale-110 active:scale-95">
-                <Camera size={20} />
-              </button>
-            </div>
-            <h3 className="text-xl font-black text-slate-900">{currentUser?.displayName || 'Farmer'}</h3>
-            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Farmer Access</p>
-          </div>
 
-          <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white space-y-4 shadow-xl">
-             <div className="flex items-center gap-3 mb-2">
-                <AlertCircle className="text-emerald-400" size={20} />
-                <h4 className="font-black text-sm uppercase tracking-widest">Visibility Tip</h4>
-             </div>
-             <p className="text-slate-400 text-xs leading-relaxed">
-                Profiles with complete descriptions and store names receive <span className="text-emerald-400 font-black">40% more orders</span> on average.
-             </p>
-          </div>
+              <h2 className="text-2xl font-black text-slate-900 mb-2 truncate">{profile.displayName || 'Authorized Farmer'}</h2>
+              <p className="text-sm font-bold text-slate-400 mb-8">{profile.email}</p>
+              
+              <div className="pt-8 border-t border-slate-50 grid grid-cols-2 gap-4">
+                 <div className="text-center">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Joined</p>
+                    <p className="text-sm font-black text-slate-900 italic">MAR 2026</p>
+                 </div>
+                 <div className="text-center">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Rank</p>
+                    <p className="text-sm font-black text-emerald-600 italic">ELITE</p>
+                 </div>
+              </div>
+           </div>
+
+           <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full -mr-24 -mt-24" />
+              <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.4em] mb-6 border-b border-white/10 pb-4">Merchant Notice</h4>
+              <p className="text-xs text-white/60 font-medium leading-relaxed italic">
+                 Update your farm name and description often to maintain engagement. Verified changes sync to the global catalog within 180 seconds.
+              </p>
+           </div>
         </div>
 
-        {/* Right Column: Form Fields */}
-        <div className="md:col-span-2 space-y-8">
-          <div className="bg-white p-8 md:p-12 rounded-[3rem] border border-slate-100 shadow-sm space-y-10">
-            {/* Group 1: Identity */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
-                <Store className="text-emerald-500" size={20} />
-                <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Store Identity</h4>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Representative Name</label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
-                    placeholder="Enter your full name"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Store / Farm Name</label>
-                  <input
-                    type="text"
-                    name="storeName"
-                    value={formData.storeName}
-                    onChange={handleChange}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
-                    placeholder="e.g. Green Valley Organic"
-                  />
-                </div>
-              </div>
-            </div>
+        {/* Edit Form */}
+        <div className="xl:col-span-2 bg-white rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden p-10 lg:p-14">
+           <div className="space-y-12">
+              <section>
+                 <h3 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                    <Store className="text-emerald-500" size={24} /> 
+                    Store Information
+                 </h3>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Official Farm Name</label>
+                       <div className="relative">
+                          <input 
+                            type="text"
+                            value={profile.farmName}
+                            onChange={(e) => setProfile({...profile, farmName: e.target.value})}
+                            className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all italic"
+                            placeholder="e.g. Green Valley Organics"
+                          />
+                          <Building className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-200" size={20} />
+                       </div>
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Contact Phone</label>
+                       <div className="relative">
+                          <input 
+                            type="text"
+                            value={profile.phoneNumber}
+                            onChange={(e) => setProfile({...profile, phoneNumber: e.target.value})}
+                            className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                            placeholder="+91 00000 00000"
+                          />
+                          <Phone className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-200" size={20} />
+                       </div>
+                    </div>
+                 </div>
+              </section>
 
-            {/* Group 2: Reach */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
-                <Phone className="text-emerald-500" size={20} />
-                <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Reach & Logistics</h4>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contact Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
-                    placeholder="+91 XXXXX XXXXX"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Farm Categories</label>
-                  <input
-                    type="text"
-                    name="categories"
-                    value={formData.categories}
-                    onChange={handleChange}
-                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all"
-                    placeholder="e.g. Vegetables, Dairy, Spices"
-                  />
-                </div>
-              </div>
+              <section>
+                 <h3 className="text-xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                    <MapPin className="text-emerald-500" size={24} /> 
+                    Operational HQ
+                 </h3>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="md:col-span-3 space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Physical Landmark / Address</label>
+                       <input 
+                         type="text"
+                         value={profile.address}
+                         onChange={(e) => setProfile({...profile, address: e.target.value})}
+                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all font-medium"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">City</label>
+                       <input 
+                         type="text"
+                         value={profile.city}
+                         onChange={(e) => setProfile({...profile, city: e.target.value})}
+                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">State</label>
+                       <input 
+                         type="text"
+                         value={profile.state}
+                         onChange={(e) => setProfile({...profile, state: e.target.value})}
+                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                       />
+                    </div>
+                    <div className="space-y-2">
+                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Pincode</label>
+                       <input 
+                         type="text"
+                         value={profile.pincode}
+                         onChange={(e) => setProfile({...profile, pincode: e.target.value})}
+                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all"
+                       />
+                    </div>
+                 </div>
+              </section>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
-                  <MapPin size={12} /> Pickup Address
-                </label>
-                <textarea
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  rows="3"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all resize-none"
-                  placeholder="Full physical address for pickup logistics"
-                />
-              </div>
-            </div>
+              <section>
+                 <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block ml-1">Farm Pitch / Description</label>
+                    <textarea 
+                      value={profile.description}
+                      onChange={(e) => setProfile({...profile, description: e.target.value})}
+                      rows={4}
+                      className="w-full bg-slate-50 border border-slate-100 rounded-3xl p-6 font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50 transition-all resize-none"
+                      placeholder="Tell customers about your harvest methods, organic certifications, and farm legacy..."
+                    />
+                 </div>
+              </section>
 
-            {/* Group 3: Story */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
-                <FileText className="text-emerald-500" size={20} />
-                <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Farmer Story</h4>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Marketplace Bio</label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleChange}
-                  rows="4"
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all resize-none"
-                  placeholder="Tell your customers about your farming practices and story..."
-                />
-              </div>
-            </div>
-
-            <div className="pt-6">
-              <button
+              <button 
                 type="submit"
-                disabled={loading}
-                className="w-full bg-emerald-600 text-white rounded-[1.5rem] py-5 font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-emerald-100 hover:bg-emerald-700 hover:-translate-y-1 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none flex items-center justify-center gap-3"
+                disabled={saving}
+                className="w-full lg:w-fit px-12 py-5 bg-slate-900 text-emerald-400 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-4 disabled:opacity-50"
               >
-                {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                {loading ? 'Committing Changes...' : 'Save Profile Changes'}
+                {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                Synchronize Cloud Profile
               </button>
-            </div>
-          </div>
+           </div>
         </div>
       </form>
     </div>

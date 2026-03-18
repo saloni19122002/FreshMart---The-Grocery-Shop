@@ -26,6 +26,7 @@ const FarmerLayout = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const menuItems = [
+    { name: 'Back to Homepage', path: '/', icon: Store },
     { name: 'Dashboard', path: '/farmer', icon: LayoutDashboard },
     { name: 'Products', path: '/farmer/products', icon: Package },
     { name: 'Orders', path: '/farmer/orders', icon: ShoppingBag },
@@ -44,7 +45,10 @@ const FarmerLayout = () => {
     }
   };
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    if (path === '/') return false;
+    return location.pathname === path;
+  };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col lg:flex-row">

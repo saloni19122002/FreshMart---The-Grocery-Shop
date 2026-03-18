@@ -9,23 +9,28 @@ import {
   Search, 
   Store,
   Heart,
-  LogOut
+  LogOut,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '../store/useCartStore';
 import { useWishlistStore } from '../store/useWishlistStore';
 import LogoutConfirmModal from './LogoutConfirmModal';
 import toast from 'react-hot-toast';
+import { useSettings } from '../hooks/useSettings';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { currentUser, role, logout } = useAuth();
+  const { settings } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
   const cartCount = useCartStore((state) => state.getItemCount());
   const wishlistCount = useWishlistStore((state) => state.items.length);
+
+  const storeName = settings?.general?.storeName || 'FreshMart';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -78,10 +83,14 @@ const Header = () => {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
             <div className="w-10 h-10 bg-emerald-50 rounded-xl group-hover:rotate-6 transition-transform duration-300 p-1.5 shadow-sm border border-emerald-100/50">
-              <img src="/logo.png" alt="FreshMart Logo" className="w-full h-full object-contain" />
+              <img src="/logo.png" alt={`${storeName} Logo`} className="w-full h-full object-contain" />
             </div>
             <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
-              Fresh<span className="text-emerald-600">Mart</span>
+              {storeName.includes('Fresh') ? (
+                <>Fresh<span className="text-emerald-600">{storeName.replace('Fresh', '')}</span></>
+              ) : (
+                <span className="text-emerald-600">{storeName}</span>
+              )}
             </span>
           </Link>
           <nav className="hidden md:flex items-center gap-1">
