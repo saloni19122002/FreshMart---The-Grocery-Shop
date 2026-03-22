@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search, Filter, X } from 'lucide-react';
-import { FixedSizeGrid as Grid } from 'react-window';
+import { Grid } from 'react-window';
 import { getActiveProducts } from '../../services/productService';
 import { getActiveCategories } from '../../services/categoryService';
 import ProductCard from '../../components/product/ProductCard';
