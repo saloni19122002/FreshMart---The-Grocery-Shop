@@ -45,6 +45,17 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+
   const handleLogout = async () => {
     try {
       setShowLogoutModal(false);
@@ -127,9 +138,11 @@ const Header = () => {
                 </button>
               </div>
             ) : (
-              <Link to="/login" className="hidden sm:inline-flex btn-primary !py-2 !px-5 text-sm">Sign In</Link>
+              <Link to="/login" className="btn-primary !py-2 !px-4 sm:!px-5 text-xs sm:text-sm whitespace-nowrap">Sign In</Link>
             )}
-            <button className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" onClick={() => setIsMobileMenuOpen(true)}><Menu size={24} /></button>
+            <button className="md:hidden p-1.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors border border-gray-100" onClick={() => setIsMobileMenuOpen(true)}>
+              <Menu size={22} />
+            </button>
           </div>
         </div>
       </div>
