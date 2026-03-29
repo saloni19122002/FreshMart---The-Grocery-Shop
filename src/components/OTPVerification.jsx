@@ -83,6 +83,8 @@ const OTPVerification = ({ email, onVerified, className = '' }) => {
         templateId,
         {
           to_email: email,
+          email: email, // Alias for some templates
+          user_email: email, // Alias for some templates
           otp: freshOtp,
           verification_code: freshOtp,
           passcode: freshOtp,
